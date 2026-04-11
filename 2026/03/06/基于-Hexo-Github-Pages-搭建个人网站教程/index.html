@@ -215,7 +215,7 @@
                         <span class="post-category">
                     Category:
                             
-                                <a href="/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/">未分类</a>
+                                <a href="/categories/Nothing/">Nothing</a>
                             
                         </span>
                     
@@ -225,7 +225,7 @@
 
         <div class="post-content">
             <p>通过Hexo和Github pages实现个人静态网站的搭建与部署。</p>
-<h2 id="1-通过Hexo和Github-pages搭建与部署网站的原理"><a href="#1-通过Hexo和Github-pages搭建与部署网站的原理" class="headerlink" title="1 通过Hexo和Github pages搭建与部署网站的原理"></a>1 通过Hexo和Github pages搭建与部署网站的原理</h2><img src="/2026/03/06/基于-Hexo-Github-Pages-搭建个人网站教程/images/搭建与部署原理.png" alt="image-20260306164003613" style="zoom:35%;" />
+<h2 id="1-通过Hexo和Github-pages搭建与部署网站的原理"><a href="#1-通过Hexo和Github-pages搭建与部署网站的原理" class="headerlink" title="1 通过Hexo和Github pages搭建与部署网站的原理"></a>1 通过Hexo和Github pages搭建与部署网站的原理</h2><img src="搭建与部署原理.png" alt="image-20260306164003613" style="zoom:35%;" />
 
 <ol>
 <li>当在本地用写好个人博客后——一般是md文档，然后让Hexo将该文档转化为网站可以显示的网页文件</li>
@@ -243,7 +243,7 @@
 <p>至于Git，是因为需要将本地web文件上传到Github，如果是托管到Github以外的服务器上就不需要了。</p>
 </blockquote>
 <h3 id="2-2-安装过程"><a href="#2-2-安装过程" class="headerlink" title="2.2 安装过程"></a>2.2 安装过程</h3><p>进入Node.js官网的命令行下载界面，可以看到首先需要下载nvm，并验证npm是否安装成功。</p>
-<img src="images/image-20260306164003613.png" alt="image-20260306164003613" style="zoom:30%;" />
+<img src="image-20260306164003613.png" alt="image-20260306164003613" style="zoom:30%;" />
 
 <p>在执行命令之前先了解一下<strong>nvm</strong>和<strong>npm</strong>。</p>
 <blockquote>
@@ -291,6 +291,21 @@
 <p>此时通过<code>hexo d</code>命令即可自动将hexo已经解析好的网页文件上传到Github。Github Pages将会对其进行渲染并展示在 <a target="_blank" rel="noopener" href="http://www.username.github.io/">www.username.github.io</a> 网址上。</p>
 <p><strong>自定义域名：</strong></p>
 <p>执行完以上操作后，即可通过 <a target="_blank" rel="noopener" href="http://www.username.github.io/">www.username.github.io</a> 访问部署的网站了。如果需要自定义域名，可通过阿里云等云服务提供商购买域名，解析到该网址，同时在Github对应的Repository—setting—Pages中填写自定义的域名，并勾选”Enforce HTTPS”。</p>
+<h2 id="5-Bug修复"><a href="#5-Bug修复" class="headerlink" title="5 Bug修复"></a>5 Bug修复</h2><h3 id="bug-1：图片在网页中不显示"><a href="#bug-1：图片在网页中不显示" class="headerlink" title="bug_1：图片在网页中不显示"></a>bug_1：图片在网页中不显示</h3><p><strong>问题描述</strong></p>
+<p>打开_post文件夹中的博客图片可以正常显示，但生成网页文件后无法显示。</p>
+<p><strong>解决方法</strong></p>
+<p>hexo框架处理有问题。解决方式有多种，这里介绍其中一种。</p>
+<p>更改配置文件，找到<code>post_asset_folder</code>，将属性值更改为<code>true</code>，同时增添两个属性，完整的修改如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">post_asset_folder: true</span><br><span class="line">marked:</span><br><span class="line">  prependRoot: true</span><br><span class="line">  postAsset: true</span><br></pre></td></tr></table></figure>
+
+<p>打开配置文件会发现下面的属性是没有的，添加后需要先下载 hexo-renderer-marked 插件才能发挥作用。终端进入到hexo文件夹目录，通过以下命令安装插件。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 检查是否已安装</span></span><br><span class="line">npm <span class="built_in">ls</span> hexo-renderer-marked</span><br><span class="line"></span><br><span class="line"><span class="comment"># 没安装就安装（推荐）</span></span><br><span class="line">npm install hexo-renderer-marked --save</span><br></pre></td></tr></table></figure>
+
+<p><code>post_asset_folder: true</code>是用来在新建博客的时候同时生成一个同名的资源文件夹，可用来存储图片。但是如果只是这样导入图片的语法会比较奇怪。</p>
+<p><code>marked.prependRoot: true</code>让hexo自动给图片加上网站根路径</p>
+<p><code>marked.postAsset: true</code>可以用markdown自带的语法导入图片</p>
+<p>当这些设置好了之后，导入方式就是<code>&lt;img src=&quot;image-20260306172107181.png&quot; alt=&quot;image-20260306172107181&quot; style=&quot;zoom:40%;&quot; /&gt;</code>或者<code>![image-20260306172107181.png](image-20260306172107181)</code>。路径就直接是文件名。</p>
+<p>因此带来的问题是如果直接打开源文件图片是显示不出来的，在网页可以显示。问题是可以解决的，但并非所有的问题都是问题。</p>
 <h2 id="Hexo常用命令"><a href="#Hexo常用命令" class="headerlink" title="Hexo常用命令"></a><em>Hexo常用命令</em></h2><table>
 <thead>
 <tr>
