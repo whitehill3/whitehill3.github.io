@@ -306,6 +306,13 @@
 <p><code>marked.postAsset: true</code>可以用markdown自带的语法导入图片</p>
 <p>当这些设置好了之后，导入方式就是<code>&lt;img src=&quot;image-20260306172107181.png&quot; alt=&quot;image-20260306172107181&quot; style=&quot;zoom:40%;&quot; /&gt;</code>或者<code>![image-20260306172107181.png](image-20260306172107181)</code>。路径就直接是文件名。</p>
 <p>因此带来的问题是如果直接打开源文件图片是显示不出来的，在网页可以显示。问题是可以解决的，但并非所有的问题都是问题。</p>
+<h3 id="bug-2：重新部署后要重新设置自定义域名"><a href="#bug-2：重新部署后要重新设置自定义域名" class="headerlink" title="bug_2：重新部署后要重新设置自定义域名"></a>bug_2：重新部署后要重新设置自定义域名</h3><p><strong>问题描述</strong></p>
+<p>每次<code>hexo deploy</code>将网页文件上传到github后，都要在setting中重新配置自定义域名，否则不能用自定义域名访问。</p>
+<p><strong>解决方法</strong></p>
+<p>问题在于，使用自定义域名访问需要CNAME文件，而每次重新部署会覆盖掉该文件，没有该文件无法与自定义域名绑定。</p>
+<p>所以需要在本地hexo的source文件夹中新建一个text文本文件，写入自定义域名，不需要www、http等，比如bass-blog.cn，命名为CNAME（大写且不要后缀）。最后在配置中的url也设置自定义的网址。</p>
+<p>此时重新生成部署即可，不用每次重新配置。</p>
+<p>（有时候部署之后现实的页面依然有部分没更新，可能是因为网站中有之前的缓存，此时用新设备或者网站的匿名模式访问可以避免这个问题。）</p>
 <h2 id="Hexo常用命令"><a href="#Hexo常用命令" class="headerlink" title="Hexo常用命令"></a><em>Hexo常用命令</em></h2><table>
 <thead>
 <tr>
