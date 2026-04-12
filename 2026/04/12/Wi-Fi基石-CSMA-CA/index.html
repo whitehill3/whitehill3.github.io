@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bass">
+
+
+
+
+
+<title>Wi-Fi基石：CSMA/CA | Bass&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const pagebody = document.getElementsByTagName('body')[0]
+
+            function setTheme(status) {
+
+                if (status === 'dark') {
+                    window.sessionStorage.theme = 'dark'
+                    pagebody.classList.add('dark-theme');
+
+                } else if (status === 'light') {
+                    window.sessionStorage.theme = 'light'
+                    pagebody.classList.remove('dark-theme');
+                }
+            };
+
+            setTheme(window.sessionStorage.theme)
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bass&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bass&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M4.5 17.27q-.213 0-.356-.145T4 16.768t.144-.356t.356-.143h15q.213 0 .356.144q.144.144.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h15q.213 0 .356.144t.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.143Q4 7.443 4 7.23t.144-.356t.356-.143h15q.213 0 .356.144T20 7.23t-.144.356t-.356.144z"/></svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="currentColor" d="m12 12.708l-5.246 5.246q-.14.14-.344.15t-.364-.15t-.16-.354t.16-.354L11.292 12L6.046 6.754q-.14-.14-.15-.344t.15-.364t.354-.16t.354.16L12 11.292l5.246-5.246q.14-.14.345-.15q.203-.01.363.15t.16.354t-.16.354L12.708 12l5.246 5.246q.14.14.15.345q.01.203-.15.363t-.354.16t-.354-.16z"/></svg>
+                </div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Wi-Fi基石：CSMA/CA</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bass</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2026-04-12&nbsp;&nbsp;19:12:18</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Research/">Research</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>要了解WiFi是怎么进行通信的，首先得从ALOHA说起。</p>
+<h3 id="1-纯ALOHA和时隙ALOHA"><a href="#1-纯ALOHA和时隙ALOHA" class="headerlink" title="1. 纯ALOHA和时隙ALOHA"></a>1. 纯ALOHA和时隙ALOHA</h3><p>ALOHA系统是1968年科学家在夏威夷岛研究出的第一个<strong>基于无线信号</strong>的网络通信系统。</p>
+<p>据AI回答，ALOHA系统网络结构是以Hub为中心的星形结构。</p>
+<p>ALOHA系统是星形结构亦或是自组织的网状结构这并不重要，ALOHA是夏威夷语“你好”的意思这也不重要，Hub是什么当然也不重要，重要的是该系统为<strong>随机多址接入问题</strong>提供了一套原始的解决方法，其核心思想经过多次迭代沿用至今。</p>
+<p>随机多址接入问题很重要吗？非常重要！</p>
+<p>在交换机出现之前，有线网络和无线网络几乎都是通过随机多址接入的方式进行通信的。</p>
+<p>后来交换机普及，解决了有线网络的碰撞问题，但如今无处不在的WiFi依然用的是随机多址接入来通信。</p>
+<p>多址接入——是通信大厦最初的基石，如今在WiFi领域依旧发挥着重要的作用！</p>
+<p>无论是有线还是无线，都是通过电磁波作为媒介传输数据。当同频率的电磁波相互碰撞，会发生叠加，接收设备收到解析不出来——数据异常。当然，不同频率的电磁波在相互碰撞之后依然可以解析出各自携带的数据，所以2.4g和5g的WiFi信号可以同时发送。</p>
+<p>ALOHA中，当出现多个设备向同一个设备同时发送数据时，就会发生碰撞，这就是随机多址接入的最核心的问题——如何处理碰撞。</p>
+<p>纯ALOHA协议的处理方法很简单——无所谓碰撞，碰撞完之后重传即可。</p>
+<p>当发送设备没有收到ACK确认信号并超时后，则认为是发生了碰撞，会进行重传。当然重传不能立即重传，否则必然会再次碰撞。在详细展开之前，先介绍一下ACK。</p>
+<p>因为无线网络信号在空气中传播，一是信号弱、而是很容易产生碰撞，并不可靠，很难知道对方是否接受到了数据。因此会要求接收方在接受到完整且正确的数据后，回给发送方一个ACK信号，表明已经收到了该数据。</p>
+<p>那为什么不能立即重传呢？因为那必然会导致再次以相同的形式碰撞，所以需要设置随机的时间，在这之后才能发送，以避免再次碰撞。</p>
+<blockquote>
+<p>也许有人会发现立即重传并不一定会导致碰撞。看下面例子：</p>
+<p>a发送数据要1ms，b需要3ms，超时时间要5ms。那么a、b在时刻0同时发送，a重传时刻是5ms，b重传时间是8ms，并且b在3-8ms的时间里不会传输数据，所以a是可以成功传输的。</p>
+<p>这个问题很好，但是没意识到一点，那就是纯ALOHA和时隙ALOHA协议中，都是将数据帧设计为相同的长度的，发送时间相同。</p>
+</blockquote>
+<p>纯ALOHA的信道利用率显然很低，因为信号是随机发送的，那如果让信号有规律地发送，那是不是就可以避免很多碰撞了？</p>
+<p>我们可以这样，把时间分成一个个相等的块，每个块的时间大致与发送数据的时间相等，发送设备只能在这个块的开头发送数据。</p>
+<p>倘若发生冲突，则随机选择若干个块时间后再发送，避免再次碰撞。</p>
+<p>“块”被称为时隙，这就是时隙ALOHA。时隙ALOHA的信道利用率是37%，是纯时隙ALOHA的18%信道利用率的两倍。</p>
+<p>至于如何计算得到笔者还未研究。</p>
+<p>时隙ALOHA有一个很大的问题，那就是有很多空闲的时隙没有利用起来。</p>
+<blockquote>
+<p>比如有a、b，碰撞后a选择3个时隙后重传，b选择6个时隙后重传，那么这6个时隙里信道利用率只有1&#x2F;3。</p>
+</blockquote>
+<blockquote>
+<p>还有个问题，那就是是否可以设置中心化的网络结构，让中心设备统一规划各设备的发送次序和时间，来最大化信道利用率？这样既能完美解决空闲时隙未被利用的问题，又能避免碰撞。</p>
+<p>回答是可以的！蜂窝网络、卫星通信、WiFi 6&#x2F;7 等引入了OFDMA、TDMA等。</p>
+</blockquote>
+<p><strong>所以引入“载波监听”。</strong></p>
+<h3 id="2-CSMA"><a href="#2-CSMA" class="headerlink" title="2. CSMA"></a>2. CSMA</h3><p>CSMA，全称为Carrier Sense Multiple Access，在ALOHA基础上引入了“监听”机制，极大提高了效率。</p>
+<p>CSMA分为 1-坚持 CSMA、非坚持 CSMA、p-坚持 CSMA 三种，简单来说，区别就是在监听的方式和监听到信道空闲之后操作的不同，有的直接发送，有的按照p概率发送，有的并非一直监听。当产生冲突后随机事件退避。</p>
+<p>“先听再发”的操作极大减少了冲突，但这仍然不够，接下来真正的统治者要出现了，其协议更加精细化，效率更高，至今仍然在不断迭代——CSMA&#x2F;CA。</p>
+<h3 id="3-CSMA-CA"><a href="#3-CSMA-CA" class="headerlink" title="3. CSMA&#x2F;CA"></a>3. <strong>CSMA&#x2F;CA</strong></h3><p>在CSMA的基础上，CSMA&#x2F;CA增加了两个十分重要的机制：</p>
+<ul>
+<li>优先级机制</li>
+<li>退避机制</li>
+</ul>
+<p>在数据交换的过程中，有ACK、CTS等信号帧需要优先发送，否则会极大影响到通信效率。</p>
+<p>所以设置SIFS、DIFS、PIFS等不同市场的帧间隔，帧间隔越短，优先级越高，这就是帧间隔存在的意义。</p>
+<img src="image-20260316151420186.png" alt="image-20260316151420186" style="zoom:45%;" />
+
+<p>如图（一般DIFS是同步开启的，因为会同步监听到信道空闲）。</p>
+<p>在设备监听到信道空闲后，需要等待DIFS时间。IFS为 inter-frame space，即帧间间隔。</p>
+<blockquote>
+<p>在最初的设计中，WiFi分为两种模式，分别是点协调式和分布式，所使用的专属帧间间隔分别为PIFS（Proprietary IFS）和DIFS（Distributed  IFS），后来分布式占据市场主导地位，PIFS也融入了分布式中。</p>
+</blockquote>
+<p>如果DIFS时间内信道空闲，那么接下来执行<strong>随机退避（back-off）</strong>，在一个范围内随机选择一个数，比如 [0，15] ，之后再等待该数量的slots再执行数据发送过程。slot是该协议设置的最小的间隔单位，在后来的协议中设置为9us。</p>
+<p>该图中 STA 1 为8，STA 2 为2。</p>
+<p>当DIFS都空闲，每空闲一个slot则倒计时减1，当减为0时开始发送。图中 STA 2 开始发送，在这个过程中 STA 1 检测到信道繁忙。</p>
+<p>STA 1 发送结束后接受方在等待SIFS后会发送ACK。</p>
+<p>所以SIFS必须比DIFS短，否则ACK就会和其它设备发送的数据产生冲突。</p>
+<p>另外ACK等经过SIFS后不需要执行退避（back-off），因为没有设备会与它们竞争。</p>
+<p>等 STA 1 监听到信道空闲，则继续之前的倒计时。</p>
+<p>倘若某两个设备倒计时同时归零，同时发送数据，则会产生冲突。冲突后会执行二进制指数退避算法，各自重新随机选择一个退避值进行倒计时。</p>
+<blockquote>
+<p>二进制指数退避算法，Binary Exponential Back off，简称BEB。<br><img src="image-20260316152849615.png" alt="image-20260316152849615" style="zoom:40%;" /><br>无线设备检测不到冲突。当数据发送结束，等待SIFS后没有接受到ACK，则认为发生了冲突，则等待EIFS后重新进行倒计时。<br>接受设备接受到碰撞后的信号，得到的是CRC检验失败的数据，所以不予发送ACK。<br>对于退避算法，假设初始窗口为 [0,31] ，每次碰撞窗口翻倍。当碰撞次数足够多，比如第七次碰撞后发送失败，则放弃发送，丢弃该包，向上层报错。</p>
+</blockquote>
+<p>SIFS的时间不能为0，因为包括硬件处理等必须需要的时间。DIFS&#x3D;SIFS+slot*2。</p>
+<p>SIFS间隔的帧除了ACK，还有RTS&#x2F;CTS，以及分片的后续帧。</p>
+<p>当SIFS结束，再检测1个slot其实就能判断是否有ACK（信道是否繁忙）。那为什么DIFS里有两个呢？因为SIFS和DIFS之间，还存在着PIFS，为某些控制帧留着优先级的空间。</p>
+<blockquote>
+<p>slot时间并非是随意设定的。</p>
+<p>想象一下，a、b、c三者都准备发送数据，分别等到2、3、4的slots。</p>
+<p>a监测到第一个slot信道空闲，所以等到第2个slot开始进行发送，b在第2个slot检测出信道有数据在发送，则往后推迟发送时间。</p>
+<p>基于以上场景，很显然，在slot时间里要能检测出信道是否空闲！如果时间低于此，则b将会在第三个slot开始发送数据，与a发送的数据相冲突，这不满足设计初衷。</p>
+<p>检测信道空闲的时间&#x3D;信号&#x2F;电磁波传播的时间+设备检测信道的时间（+MAC层处理延迟）。</p>
+<p>但这还不够，因为设备从接收状态转变成发送状态也需要时间，这也应该加入slot中。为什么呢？</p>
+<p>大部分设备在slot都是处于接收状态，用来监听信道。试想一下，如果slot只由信号&#x2F;电磁波传播的时间和设备检测信道的时间组成，当a监测到第一个slot空闲，在第2个slot发送数据时才切换为发送状态，那么a发送数据的时间就会推迟，b可能无法在第2个slot监测到信道中是有数据传输的，从而将会在第3个slot发送，产生冲突。（似乎不太对？）</p>
+<p>当a检测到信道空闲，且退避时间归0后，就需要转换收发状态了。</p>
+<p>所以<strong>slot&#x3D;信号&#x2F;电磁波传播的时间+设备检测信道的时间+天线的接收&#x2F;发送切换。</strong></p>
+</blockquote>
+<h3 id="4-隐藏终端和暴露终端"><a href="#4-隐藏终端和暴露终端" class="headerlink" title="4. 隐藏终端和暴露终端"></a>4. 隐藏终端和暴露终端</h3><blockquote>
+<p>一句话说隐藏终端和暴露终端<br>隐藏终端：有设备“隐藏”起来了，监听不到，不能发送但却发送出去了，因此会产生冲突<br>暴露终端：有设备“暴露”在眼里，虽然监听到信道繁忙，但是其实可以发送数据而不冲突</p>
+</blockquote>
+<p>隐藏终端、CTS&#x2F;RTS模式和虚拟载波监听</p>
+<img src="image-20260316164650228.png" alt="image-20260316164650228" style="zoom:30%;" />
+
+<p>如图，STA 1和STA 2各自监听不到对方的信号。</p>
+<p>当STA 1给AP发送数据时，STA 2监听不到，会以为信道空闲，倒计时结束也会发送数据，这种情况下会在AP处产生碰撞。</p>
+<p>为了解决这个问题，提出了CTS&#x2F;RTS模式，即预约机制。</p>
+<p>发送设备在发送数据之前会向AP发送RTS帧（Request To Send，即请求发送），AP收到后会回复一个CTS帧（准许发送）。当其他设备接受到该帧会读取其中的duration，在该期间挂起倒计时，这也被称为虚拟载波监听，和物理载波监听相对。</p>
+<p>预约成功后，只有STA 1能发送数据，STA 2因收到了CTS帧在这期间会挂起倒计时，不会发送数据，避免了隐藏终端问题。</p>
+<blockquote>
+<p>CTS&#x2F;RTS也用于解决帧过长的问题，其核心是想是尽可能用短帧冲突避免长帧冲突。</p>
+<p>该模式在很多WiFi中是自动开启，比如当帧长到达一定程度后开启。</p>
+</blockquote>
+<p>暴露终端</p>
+<img src="image-20260316171204705.png" alt="image-20260316171204705" style="zoom:30%;" />
+
+<p>隐藏终端在单AP场景也可能出现，而暴露终端只存在于多AP场景。</p>
+<p>暴露终端问题并不像隐藏终端那样严重到信道可能无法工作，其问题所在只是信道的利用不够充分。</p>
+<p>如图，STA 1和STA 2可以相互监听，但各自的信号影响不到对方的AP。</p>
+<p>在这种情况下，当STA 1发送数据，STA 2监听到信道繁忙，则继续等待。但事实上无需等待，因为它发送数据的信号并不会和STA 1的信号在AP 1发生冲突。</p>
+<p>这就是暴露终端，可以发送但是不发送。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20721272">https://zhuanlan.zhihu.com/p/20721272</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/20780796">https://zhuanlan.zhihu.com/p/20780796</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bass</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://bass-blog.cn/2026/04/12/Wi-Fi%E5%9F%BA%E7%9F%B3-CSMA-CA/">http://bass-blog.cn/2026/04/12/Wi-Fi%E5%9F%BA%E7%9F%B3-CSMA-CA/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2026 Bass<a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE (转载请标明出处)</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2026/04/12/WiFi%E4%BB%A3%E9%99%85%E5%8F%91%E5%B1%95/">WiFi代际发展</a>
+            
+            
+            <a class="next" rel="next" href="/2026/03/06/%E5%9F%BA%E4%BA%8E-Hexo-Github-Pages-%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E7%BD%91%E7%AB%99%E6%95%99%E7%A8%8B/">基于 Hexo + Github Pages 搭建个人网站</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bass | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
