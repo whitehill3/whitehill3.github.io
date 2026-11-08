@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bass">
+
+
+
+
+
+<title>对简单的本地分析笔记 Agent 理解 | Bass&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const pagebody = document.getElementsByTagName('body')[0]
+
+            function setTheme(status) {
+
+                if (status === 'dark') {
+                    window.sessionStorage.theme = 'dark'
+                    pagebody.classList.add('dark-theme');
+
+                } else if (status === 'light') {
+                    window.sessionStorage.theme = 'light'
+                    pagebody.classList.remove('dark-theme');
+                }
+            };
+
+            setTheme(window.sessionStorage.theme)
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bass&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bass&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M4.5 17.27q-.213 0-.356-.145T4 16.768t.144-.356t.356-.143h15q.213 0 .356.144q.144.144.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h15q.213 0 .356.144t.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.143Q4 7.443 4 7.23t.144-.356t.356-.143h15q.213 0 .356.144T20 7.23t-.144.356t-.356.144z"/></svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="currentColor" d="m12 12.708l-5.246 5.246q-.14.14-.344.15t-.364-.15t-.16-.354t.16-.354L11.292 12L6.046 6.754q-.14-.14-.15-.344t.15-.364t.354-.16t.354.16L12 11.292l5.246-5.246q.14-.14.345-.15q.203-.01.363.15t.16.354t-.16.354L12.708 12l5.246 5.246q.14.14.15.345q.01.203-.15.363t-.354.16t-.354-.16z"/></svg>
+                </div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">对简单的本地分析笔记 Agent 理解</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bass</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2026-11-08&nbsp;&nbsp;13:13:54</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Agent%E5%BC%80%E5%8F%91/">Agent开发</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>这里通过介绍一个非常简单的 Agent 的实现逻辑，来对 Agent 有基本的了解。</p>
+<p>这个简单 Agent 功能是笔记分析，输入是笔记的目录和 DeepSeek API 密钥，输出是对目录下笔记的分析。以下都针对于附件中的 Agent.py 实现进行分析。</p>
+<img src="image-20261029181132327.png" alt="image-20261029181132327" style="zoom:40%;" />
+
+<p>上图是该 Agent 的架构。图中的核心组件有两个，一个是 Harness，一个是模型。</p>
+<p>模型使用的是 DeepSeek。这里使用 OpenAI SDK 对 DeepSeek 模型进行调用，也可以参考DeepSeek API 文档直接用 requests 库经过 http 进行调用。二者本质一样，OpenAI SDK 就是对后者进行了封装。</p>
+<h2 id="messages-和-tools"><a href="#messages-和-tools" class="headerlink" title="messages 和 tools"></a>messages 和 tools</h2><p>在工作流之前，先简单了解一下 DeepSeek 提供的 API 接入方式。</p>
+<p>官方文档：<a target="_blank" rel="noopener" href="https://api-docs.deepseek.com/zh-cn/api/create-chat-completion">https://api-docs.deepseek.com/zh-cn/api/create-chat-completion</a></p>
+<p>要请求调用模型，必须提供一些 JSON 结构的信息，其中包含各种参数，其中最重要的两个参数分别是 messages 和 tools。</p>
+<p>messages 保存所有轮次的对话的信息，每一次输入都要包含之前所有的历史消息，目的在于为模型提供上下文。系统要求、用户输入、模型输出、工具调用的信息都要以 messages.append() 的形式保存。</p>
+<p>tools 是该 harness 提供的工具列表，也必须以文档要求的方式结构化组织。模型会按需要通过函数名和参数进行调用。</p>
+<p><img src="image-20261029183744147.png" alt="image-20261029183744147" style="zoom:30%;" /><img src="image-20261029183827649.png" alt="image-20261029183827649" style="zoom:29.5%;" /></p>
+<h2 id="工作流"><a href="#工作流" class="headerlink" title="工作流"></a>工作流</h2><ol>
+<li><p>Harness，也可以说 Agent 程序，接收到目录和 DeepSeek API Key 后，传入massages 、tools等参数到 OpenAI 对象来调用模型（如下图）。message 中保存着两条信息，一条是系统对该 agent 的要求，一条是用户要求。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">response = client.chat.completions.create(</span><br><span class="line">                model=<span class="string">&quot;deepseek-flash&quot;</span>,</span><br><span class="line">                messages=messages,</span><br><span class="line">                tools=TOOLS,</span><br><span class="line">                max_tokens=<span class="number">4096</span>,</span><br><span class="line">                extra_body=&#123;<span class="string">&quot;thinking&quot;</span>: &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;disabled&quot;</span>&#125;&#125;,</span><br><span class="line">            )</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>模型服务器接收到的是 JSON 格式的 API 请求，而后将该结构化数据处理为模型能接受的输入。</p>
+</li>
+<li><p>模型得到输出后也要包装为 JSON 格式返回给 Harness。</p>
+</li>
+<li><p>Harness 解析得到返回数据中的 tool_call 判断是否需要使用工具。第一轮肯定需要读取目录。</p>
+</li>
+<li><p>读取后将目录下的列表内容以“tool message”的角色保存到 messages 中，以在第二轮给模型继续解析。</p>
+</li>
+<li><p>进行下一轮模型调用，调用和第一轮一样，不同点在于这次 messages 中更新了目录下的文件列表。<br>（第二轮模型会通过这些目录列出需要调用的工具。<br>这里可能会为好几轮对目录中的文件进行读取，分为几轮调用是由模型决定的。通过文件系统读取得到的文件内容也要放进 messages 中。<br>当读取完文件内容后进入最后一轮调用，这次模型阅读所有笔记并给出笔记分析。）</p>
+</li>
+<li><p>循环结束后返回输出给用户</p>
+<p>（模型的调用是一个循环。模型的返回中有一个字段为“finish_reason”。<br>结束循坏条件就是当该字段为“stop”，stop 代表模型自然结束生成；<br>或者达到 Harness 规定的最大调用次数，避免无限循环下去。）</p>
+</li>
+</ol>
+<p>P.S. 这里的目录下笔记的读取是非递归的，这是由 Harness 实现的函数决定的：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">list_files</span>():</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">sorted</span>(p.name <span class="keyword">for</span> p <span class="keyword">in</span> root.iterdir() <span class="keyword">if</span> p.is_file())</span><br><span class="line"><span class="comment"># 这里只列出了文件</span></span><br></pre></td></tr></table></figure>
+
+<p>上图是架构图，以下是流程图，流程与上图不完全相同，供参考：</p>
+<img src="image-20261029192334741.png" alt="image-20261029192334741" style="zoom:25%;" />
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bass</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://bass-blog.cn/2026/11/08/%E5%AF%B9%E7%AE%80%E5%8D%95%E7%9A%84%E6%9C%AC%E5%9C%B0%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0%20Agent%20%E7%90%86%E8%A7%A3/">http://bass-blog.cn/2026/11/08/%E5%AF%B9%E7%AE%80%E5%8D%95%E7%9A%84%E6%9C%AC%E5%9C%B0%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0%20Agent%20%E7%90%86%E8%A7%A3/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2026 Bass<a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE (转载请标明出处)</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2026/11/08/Agent%E5%BC%80%E5%8F%91%E4%B8%AD%E6%B6%89%E5%8F%8A%E7%9A%84%E6%A6%82%E5%BF%B5%E7%90%86%E8%A7%A3/">Agent开发中涉及的概念理解（Agent、Harness、API、SDK、MCP、Skills）</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bass | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

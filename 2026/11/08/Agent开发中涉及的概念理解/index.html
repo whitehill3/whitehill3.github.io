@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Bass">
+
+
+
+
+
+<title>Agent开发中涉及的概念理解（Agent、Harness、API、SDK、MCP、Skills） | Bass&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const pagebody = document.getElementsByTagName('body')[0]
+
+            function setTheme(status) {
+
+                if (status === 'dark') {
+                    window.sessionStorage.theme = 'dark'
+                    pagebody.classList.add('dark-theme');
+
+                } else if (status === 'light') {
+                    window.sessionStorage.theme = 'light'
+                    pagebody.classList.remove('dark-theme');
+                }
+            };
+
+            setTheme(window.sessionStorage.theme)
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Bass&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Bass&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M4.5 17.27q-.213 0-.356-.145T4 16.768t.144-.356t.356-.143h15q.213 0 .356.144q.144.144.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.144T4 11.999t.144-.356t.356-.143h15q.213 0 .356.144t.144.357t-.144.356t-.356.143zm0-4.77q-.213 0-.356-.143Q4 7.443 4 7.23t.144-.356t.356-.143h15q.213 0 .356.144T20 7.23t-.144.356t-.356.144z"/></svg>
+                    <svg class="close-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols Light by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="currentColor" d="m12 12.708l-5.246 5.246q-.14.14-.344.15t-.364-.15t-.16-.354t.16-.354L11.292 12L6.046 6.754q-.14-.14-.15-.344t.15-.364t.354-.16t.354.16L12 11.292l5.246-5.246q.14-.14.345-.15q.203-.01.363.15t.16.354t-.16.354L12.708 12l5.246 5.246q.14.14.15.345q.01.203-.15.363t-.354.16t-.354-.16z"/></svg>
+                </div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                <a class="menu-item" href="/archives">Posts</a>
+                
+                <a class="menu-item" href="/category">Categories</a>
+                
+                <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if (toggleMenu.classList.contains("active")) {
+            toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        } else {
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Agent开发中涉及的概念理解（Agent、Harness、API、SDK、MCP、Skills）</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Bass</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">2026-11-08&nbsp;&nbsp;13:13:50</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Agent%E5%BC%80%E5%8F%91/">Agent开发</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Agent、Harness是什么？有什么区别？"><a href="#Agent、Harness是什么？有什么区别？" class="headerlink" title="Agent、Harness是什么？有什么区别？"></a>Agent、Harness是什么？有什么区别？</h2><p>当前的 Agent 的含义更多的是能自主根据上下文进行决策，调用工具解决问题的 AI Agent。</p>
+<p>Harness 则是以大模型作为驱动，围绕着大模型搭建的一套包括模型调用规则、工具的提供、上下文管理等系统。</p>
+<p>Agent &#x3D; Harness + 大模型。</p>
+<p>二者很多时候可以通用，其区别跟“家”和“屋”的区别类似。家 &#x3D; 屋 + 人。</p>
+<p>例子：Codex、Claude Code更多的被称为 Agent，这里强调 Harness 和模型是一个整体。Deepseek Harness 可以方便更换不同模型，所以侧重于叫 Harness。但本质上差不多，比如一套房子可以叫“快乐之屋”，也可以叫“快乐之家”。</p>
+<h2 id="API"><a href="#API" class="headerlink" title="API"></a>API</h2><p>API 是 Application Programming Interface。简单理解就是某个软件&#x2F;平台对外提供的服务结构。</p>
+<p>例子一：Deepseek要对外提供模型服务，所以将这些服务暴露出来，以一套标准的格式面向用户。用户通过这标准的格式，可以获取其服务。</p>
+<p>例子二：一位石油领域专家要对外提供安全咨询的服务，在淘宝平台挂上链接，通过下单该链接可以获取相关咨询。这个链接就是该专家提供的API。</p>
+<p>例子三：Win 操作系统底层需要向上层应用提供不同服务，比如文件的读写、进程的创建与销毁。这些也需要通过函数调用的形式提供给程序，这些函数就是操作系统的 API。</p>
+<p>通俗且简单地说，API 就是某个主体对外提供的，能通往自己某项服务的入口。</p>
+<p>API 能够选择性地提供服务，相对安全，同时对不同用户是一套标准，提高提供和获取服务的效率。</p>
+<blockquote>
+<p>【<strong>这里介绍 DeepSeek 的 API 调用方式（通过以 HTTP 为基础的 Requests 库调用）。</strong>】</p>
+<p>（DeepSeek 的 API 调用是通过 HTTP 请求来实现的。并且请求的内容和返回的内容都是<strong>正文部分</strong>，虽然是通过 HTTP 实现的，但是 HTTP 是透明的。）</p>
+<p>（Python 中的 Requests 库可以实现 HTTP 请求。DeepSeek 中的 API 文档规定的是其中的内容，也就是请求体的格式和返回的正文的格式。）</p>
+<p>【请求部分】</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>作用</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>URL</td>
+<td>请求发给哪个地址、哪个接口</td>
+<td><code>https://example.com/api/chat</code></td>
+</tr>
+<tr>
+<td>Method：请求方法</td>
+<td>表达要进行哪类操作</td>
+<td><code>GET</code>、<code>POST</code></td>
+</tr>
+<tr>
+<td>Headers：请求头</td>
+<td>附带格式、身份等信息</td>
+<td>API Key、内容类型</td>
+</tr>
+<tr>
+<td>Body：请求体</td>
+<td>要交给服务器处理的数据</td>
+<td>聊天消息、工具说明</td>
+</tr>
+</tbody></table>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> json</span><br><span class="line"></span><br><span class="line">url = <span class="string">&quot;https://api.deepseek.com/chat/completions&quot;</span></span><br><span class="line"></span><br><span class="line">payload = json.dumps(&#123;  <span class="comment"># 字典转换成 JSON 字符串</span></span><br><span class="line">  <span class="string">&quot;messages&quot;</span>: [</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;content&quot;</span>: <span class="string">&quot;You are a helpful assistant&quot;</span>,</span><br><span class="line">      <span class="string">&quot;role&quot;</span>: <span class="string">&quot;system&quot;</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="string">&quot;content&quot;</span>: <span class="string">&quot;Hi&quot;</span>,</span><br><span class="line">      <span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  ],</span><br><span class="line">  <span class="string">&quot;model&quot;</span>: <span class="string">&quot;deepseek-flash&quot;</span>,</span><br><span class="line">  <span class="string">&quot;thinking&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;enabled&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;reasoning_effort&quot;</span>: <span class="string">&quot;none&quot;</span>,</span><br><span class="line">  <span class="string">&quot;max_tokens&quot;</span>: <span class="number">4096</span>,</span><br><span class="line">  <span class="string">&quot;response_format&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;text&quot;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">&quot;stop&quot;</span>: <span class="literal">None</span>,</span><br><span class="line">  <span class="string">&quot;stream&quot;</span>: <span class="literal">False</span>,</span><br><span class="line">  <span class="string">&quot;stream_options&quot;</span>: <span class="literal">None</span>,</span><br><span class="line">  <span class="string">&quot;temperature&quot;</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="string">&quot;top_p&quot;</span>: <span class="number">1</span>,</span><br><span class="line">  <span class="string">&quot;tools&quot;</span>: <span class="literal">None</span>,</span><br><span class="line">  <span class="string">&quot;tool_choice&quot;</span>: <span class="string">&quot;none&quot;</span>,</span><br><span class="line">  <span class="string">&quot;logprobs&quot;</span>: <span class="literal">False</span>,</span><br><span class="line">  <span class="string">&quot;top_logprobs&quot;</span>: <span class="literal">None</span></span><br><span class="line">&#125;)</span><br><span class="line">headers = &#123;			<span class="comment"># 请求头</span></span><br><span class="line">  <span class="string">&#x27;Content-Type&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span>,	</span><br><span class="line">  <span class="string">&#x27;Accept&#x27;</span>: <span class="string">&#x27;application/json&#x27;</span>,		<span class="comment"># 意思是希望收到 JSON 格式的响应</span></span><br><span class="line">  <span class="string">&#x27;Authorization&#x27;</span>: <span class="string">&#x27;Bearer &lt;TOKEN&gt;&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">response = requests.request(<span class="string">&quot;POST&quot;</span>, url, headers=headers, data=payload)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(response.text)</span><br></pre></td></tr></table></figure>
+
+<p><code>JSON 文本和 Python 中的字典对象形式一样，但是是有区别的，需要进行转换</code></p>
+<p><strong>【返回部分】</strong></p>
+<p>返回的形式如下所示，可以分别通过 request 返回的对象取出。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 200 OK</span><br><span class="line">Content-Type: application/json</span><br><span class="line">Content-Length: 19</span><br><span class="line"></span><br><span class="line">&#123;&quot;message&quot;:&quot;Hello&quot;&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">response.status_code</span><br><span class="line"><span class="comment"># 200，HTTP 状态码</span></span><br><span class="line"></span><br><span class="line">response.headers[<span class="string">&quot;Content-Type&quot;</span>]</span><br><span class="line"><span class="comment"># &quot;application/json&quot;，响应头中的一个字段</span></span><br><span class="line"></span><br><span class="line">response.text</span><br><span class="line"><span class="comment"># &#x27;&#123;&quot;message&quot;:&quot;Hello&quot;&#125;&#x27;，正文，类型是字符串</span></span><br><span class="line"></span><br><span class="line">response.json()</span><br><span class="line"><span class="comment"># &#123;&quot;message&quot;: &quot;Hello&quot;&#125;，把 JSON 正文解析成 Python 字典</span></span><br></pre></td></tr></table></figure>
+
+<p>得到正文后，正文的格式就如 DeepSeek 文档中所示。</p>
+</blockquote>
+<h2 id="SDK"><a href="#SDK" class="headerlink" title="SDK"></a>SDK</h2><p>SDK 全称是 Software Development Kit，软件开发工具包。</p>
+<p>某些代码实现复杂且常用，这时候可以把这些包装成一个包，提供对应的接口，拿来即用。SDK 正是为此而诞生的。</p>
+<p>SDK 在代码库之外，有些的还包括开发工具。</p>
+<p>例子：OpenAI Python SDK，提供针对于 Open AI 平台的模型介入工具包，即对相关 API 作了封装。DeepSeek 对该 SDK 作了兼容；JDK，包括 Java 库、运行时环境、开发文档等开发工具，为 Java 开发服务；此外还有 AWS SDK for Python：Boto3，为使用 AWS 服务；Android SDK，为开发安卓应用服务。</p>
+<blockquote>
+<p><strong>【这里介绍 API 是如何封装到 SDK 中的】</strong></p>
+<p>DeepSeek模型通过 OpenAI SDK调用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这里的 messages 为上面 API 调用代码中 payload 中的 messages，TOOLS 要按 API 格式实现</span></span><br><span class="line"><span class="keyword">from</span> openai <span class="keyword">import</span> OpenAI</span><br><span class="line"></span><br><span class="line">client = OpenAI(</span><br><span class="line">    api_key=api_key,</span><br><span class="line">    base_url=<span class="string">&quot;https://api.deepseek.com&quot;</span>,</span><br><span class="line">    timeout=<span class="number">60</span>,</span><br><span class="line">    max_retries=<span class="number">0</span>,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">response = client.chat.completions.create(</span><br><span class="line">    model=<span class="string">&quot;deepseek-flash&quot;</span>,</span><br><span class="line">    messages=messages,</span><br><span class="line">    tools=TOOLS,</span><br><span class="line">    max_tokens=<span class="number">4096</span>,</span><br><span class="line">    extra_body=&#123;<span class="string">&quot;thinking&quot;</span>: &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;disabled&quot;</span>&#125;&#125;,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">message = response.choices[<span class="number">0</span>].message</span><br></pre></td></tr></table></figure>
+
+<p>这里把请求体，即 payload 中很多参数都包装起来了，以及 requests 请求连接过程、JSON 格式处理、请求失败处理、模型回应等</p>
+</blockquote>
+<h2 id="MCP"><a href="#MCP" class="headerlink" title="MCP"></a>MCP</h2><p>Model Context Protocol，模型上下文协议。</p>
+<p>模型需要接入工具来实现各种操作，比如读写文件。在 DeepSeek 的 API 调用格式中有个参数 tools，需要将工具都以该形式（提供描述、名称、参数等）呈现给模型，模型才知道如何去使用。</p>
+<img src="image-20261029135425933.png" alt="image-20261029135425933" style="zoom:30%;" />
+
+<p>但是最初在实现上会困难，因为 Agent 需要一个个去适配。比如读取文件要添加一个 read_file，写文件也要添加对应的函数，而且这些函数需要额外实现。这是在工具端的麻烦——某个平台内有不同的工具，要一个个去实现。</p>
+<p>这时候工具端如果能提供一个服务，将所有的可提供的服务都按照一个标准（JSON-RPC 2.0 消息格式）实现好（Agent 再将这种格式适配成模型 API 接受的格式），并且对外提供一个通向这些不同工具的接口就好了。这就是 MCP Server 做的事情。这样的话 Agent 就也得按照统一的 MCP 格式来和工具端交流了，这就是 Agent Client 做的事情（MCP 协议通过 JSON 交流）。</p>
+<p>举个例子：某家银行可以取现金、存现金、买国债，有对公服务、贷款服务、开卡服务等，对应的业务有对应的业务员处理。假如一个人要什么服务都得去和相应的业务员联系的话会很麻烦，得找对应业务员的联系方式，业务处理过程也要了解。如果这些业务都能整合在一起就好了，不如就叫做“资源整合部”。这样的话我们要办什么业务直接去找资源整合部就好了。同时其他的什么电子、互联网、石油、零售类的各种各样的公司如果都有同样的处理方式的资源整合部，那么对于所有的用户来说不管做什么只需要联系对应公司的资源整合部就行了，我们只需要熟悉资源整合部的处理方式。这里“资源整合部”就是 MCP Server。用户通过资源整合部的处理方式去交流，比如通过助手来提交对应的表格，并接受回执，那么助手就是 MCP Client，表格就是通信的格式。</p>
+<p>通过 MCP 调用工具的流程是这样的：</p>
+<ol>
+<li><p>获取工具列表流程：Agent的 MCP Client —— MCP Server，获取工具列表，转换成 API 的 tools 参数</p>
+</li>
+<li><p>调用工具流程：模型需要调用某个工具，MCP Client —— MCP Server，Client 接收 Server 的返回数据</p>
+</li>
+</ol>
+<h2 id="Skills"><a href="#Skills" class="headerlink" title="Skills"></a>Skills</h2><p>Skills 主要以 md 文档的形式保存。</p>
+<p>在用模型解决问题的过程中有些流程是通用的，在以后解决类似的问题的时候可以复用，这时候就可以把这套流程以 md 文档的形式记录下来，叫做 Skills。比如概念解释、论文写作等都可以整理成 Skills。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Bass</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://bass-blog.cn/2026/11/08/Agent%E5%BC%80%E5%8F%91%E4%B8%AD%E6%B6%89%E5%8F%8A%E7%9A%84%E6%A6%82%E5%BF%B5%E7%90%86%E8%A7%A3/">http://bass-blog.cn/2026/11/08/Agent%E5%BC%80%E5%8F%91%E4%B8%AD%E6%B6%89%E5%8F%8A%E7%9A%84%E6%A6%82%E5%BF%B5%E7%90%86%E8%A7%A3/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2026 Bass<a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE (转载请标明出处)</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2026/11/08/%E5%AF%B9%E7%AE%80%E5%8D%95%E7%9A%84%E6%9C%AC%E5%9C%B0%E5%88%86%E6%9E%90%E7%AC%94%E8%AE%B0%20Agent%20%E7%90%86%E8%A7%A3/">对简单的本地分析笔记 Agent 理解</a>
+            
+            
+            <a class="next" rel="next" href="/2026/04/18/Everything-is-nothing/">Everything is nothing</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Bass | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
